@@ -1,152 +1,241 @@
-let firstOperand = '';
-let secondOperand ='';
-let result;
+let firstOperand = null;
+let secondOperand = null;
+let result = null;
 let displayValue = '0';
-let operator = null;
+let firstOperator = null;
 let secondOperator = null;
-let operatorUsed = false;
-let operatorTwoUsed = false;
 
-const display = document.getElementById("display");
-
-
-
-function addition(){
-    result = parseFloat(firstOperand) + parseFloat(secondOperand);
-    console.log(result);
-    display.innerText = result;
-}
-function subtraction(){
-    result = firstOperand - secondOperand;
-    display.innerText = result;
-}
-function multiplication(){
-    result = firstOperand * secondOperand;
-    display.innerText = result;
-}
-function division(){
-    result = firstOperand / secondOperand;
-    display.innerText = result;
-}
-let numbers = '';
-function updateDisplay(userInput){
-        
-    numbers += userInput;
-    display.innerText = numbers;     
-}
-
-function ac(){
+function updateDisplay() {
+    const display = document.getElementById("display");
     display.innerText = displayValue;
-    firstOperand ='';
-    secondOperand ='';
-    operatorUsed = false;
-    operator = null;
-    numbers ='';
-}
-
-function del(){
-    const lastItem = numbers[numbers.length - 1];
-    numbers = numbers.toString().slice(0,-1);
-    display.innerText = numbers;
-    if (operatorUsed == true){
-        if (numbers.lastItem == "+" || numbers.lastItem == "-" || numbers.lastItem == "x" || numbers.lastItem == "÷"){
-            operatorUsed= false;
-            operator = null;
-            console.log("Operator removed");
-        }else{
-            secondOperand = secondOperand.slice(0,-1);  
-            console.log("Second Operator removed");
-        }
-    } else {
-        if (numbers.length < 1){
-            display.innerText = displayValue;
-        }
-        firstOperand = firstOperand.slice(0,-1);
-        console.log("First operator removed");
+    if (displayValue.length > 9) {
+        display.innerText = displayValue.substring(0, 9);
     }
 }
-function operate(firstOperand, secondOperand, operator){
+// Call it first time to update the calculator value to 0
+updateDisplay();
+
+function ac() {
+    displayValue = '0';
+    firstOperand = null;
+    secondOperand = null;
+    firstOperator = null;
+    secondOperator = null;
+    result = null;
+    updateDisplay();
+}
+
+function del() {
+   
+   // console.log(firstOperand);
+   // console.log(secondOperand);
+   // console.log(firstOperator);
+   // console.log(secondOperator);
+   // if (secondOperand == null && secondOperator == null) {
+   //     firstOperator = null;
+   //     console.log("operator removed");
+   // }else {    
+   //     console.log("Last item was removed");
+   // }
+    displayValue = displayValue.toString().slice(0, -1);
+    updateDisplay();
+}
+
+function operate(firstOperand, secondOperand, operator) {
 
     switch (operator) {
-      case "+":
-        addition(firstOperand, secondOperand);
-        break;
-      case "-":
-        subtraction(firstOperand, secondOperand);
-        break;
-      case "x":
-        multiplication(firstOperand, secondOperand);
-        break;
-      case "÷":
-    
-        division(firstOperand, secondOperand);
-        break;
-    }
-  }
-
- let userInput = [];
-function userInputCalc(userInput){
-    if (operatorUsed == false){
-        firstOperand += userInput;
-        console.log(`First operand ${firstOperand}`);
-    } else{
-        if (userInput == "+" || userInput == "-" || userInput == "x" || userInput == "÷"){
-            operator = userInput;
-        }else{
-        secondOperand += userInput;
-        console.log(`Second operand ${secondOperand}`); 
-        }
-        
+        case "+":
+            return firstOperand + secondOperand;
+            break;
+        case "-":
+            return firstOperand - secondOperand;
+            break;
+        case '*':
+            return firstOperand * secondOperand;
+            break;
+        case "/":
+            if (secondOperand === 0) {
+                alert("Cant divide by 0");
+                return "Error";
+            } else {
+                return firstOperand / secondOperand;
+            }
+            break;
     }
 }
 
-  // Get user Input for number buttons
-  const numberButtons = document.querySelectorAll(".number");
 
-  numberButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      //appendNumber(button.innerText)
-      console.log(`Button ${button.innerText} was pressed`);
- 
-      userInput= button.innerText;
-      updateDisplay(userInput);
-      userInputCalc(userInput);
-    })
-  });
-  // End of user input for number buttons
-
-  // Get user input for operationButtons
-  const operationButtons = document.querySelectorAll(".btnOperator")
-  operationButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-    //  calculator.chooseOperation(button.innerText);
-    operatorUsed = true;
-     operator = button.innerText;
-     userInput = operator;
-      updateDisplay(operator);
-      userInputCalc(userInput);
-    });
-  });
-
-  // End of user input for operationButtons
-
-  // Equal buttons 
-const equalButton = document.querySelector(".btnEqual");
-  equalButton.addEventListener('click', button => {
-    updateDisplay(button.innerText);
-    if (secondOperand == 0){
-        alert("Can't divide by 0");
-        ac();
-    }else{
-        operate(firstOperand, secondOperand, operator); 
+function userInputNumber(operand) {
+    if (firstOperator === null) {
+        if (displayValue === '0' || displayValue === 0) {
+            displayValue = operand;
+        } else if (displayValue === firstOperand) {
+            displayValue = operand;
+        } else {
+            displayValue += operand;
+        }
+    } else {
+        if (displayValue === firstOperand) {
+            displayValue = operand;
+        } else {
+            displayValue += operand;
+        }
     }
-   
-  })
+}
+
+function userInputOperator(operator) {
+    if (firstOperator != null && secondOperator === null) {
+        secondOperator = operator;
+        secondOperand = displayValue;
+        result = operate(Number(firstOperand), Number(secondOperand), firstOperator);
+        displayValue = roundAccurately(result, 15).toString();
+        firstOperand = displayValue;
+        result = null;
+    } else if (firstOperator != null && secondOperator != null) {
+        secondOperand = displayValue;
+        result = operate(Number(firstOperand), Number(secondOperand), secondOperator);
+        secondOperator = operator;
+        displayValue = roundAccurately(result, 15).toString();
+        firstOperand = displayValue;
+        result = null;
+    } else {
+        firstOperator = operator;
+        firstOperand = displayValue;
+    }
+}
+
+function Equal() {
+    if (firstOperator === null) {
+        displayValue = displayValue;
+    } else if (secondOperator != null) {
+        secondOperand = displayValue;
+        result = operate(Number(firstOperand), Number(secondOperand), secondOperator);
+        if (result === 'Error') {
+            displayValue = 'Error';
+        } else {
+            displayValue = roundAccurately(result, 15).toString();
+            firstOperand = displayValue;
+            secondOperand = null;
+            firstOperator = null;
+            secondOperator = null;
+            result = null;
+        }
+    } else {
+        secondOperand = displayValue;
+        result = operate(Number(firstOperand), Number(secondOperand), firstOperator);
+        if (result === 'Error') {
+            displayValue = 'Error';
+        } else {
+            displayValue = roundAccurately(result, 15).toString();
+            firstOperand = displayValue;
+            secondOperand = null;
+            firstOperator = null;
+            secondOperator = null;
+            result = null;
+        }
+    }
+}
+
+function roundAccurately(num, places) {
+    return parseFloat(Math.round(num + 'e' + places) + 'e-' + places);
+}
+
+// Function to add dot
+function addDot(){
+    let dot =".";
+    if(displayValue === firstOperand || displayValue === secondOperand) {
+        displayValue = '0';
+        displayValue += dot;
+    } else if(!displayValue.includes(dot)) {
+        displayValue += dot;
+    } 
+    updateDisplay();
+}
+//End of add dot
+
+// Get user Input for number buttons
+const numberButtons = document.querySelectorAll(".number");
+numberButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        console.log(`Button ${button.innerText} was pressed`);
+        operand = button.innerText;
+        userInputNumber(operand);
+        updateDisplay();
+    })
+});
+// End of user input for number buttons
+
+// Get user input for operationButtons
+const operationButtons = document.querySelectorAll(".btnOperator")
+operationButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+
+        let operator = button.innerText;
+        userInputOperator(operator);
+        updateDisplay();
+    });
+});
+
+// End of user input for operationButtons
+
+// Equal buttons 
+const equalButton = document.querySelector(".btnEqual");
+equalButton.addEventListener('click', button => {
+    Equal();
+    updateDisplay();
+})
+// End of equal 
+
+// Clear 
 
 document.getElementById("AC").addEventListener("click", button => {
     ac();
 })
-  
+// End of Clear
+
+// Delete last element
 document.getElementById("delete").addEventListener("click", button => {
     del();
 })
+// End of delete last element
+
+// Add decimal
+document.getElementById("decimal").addEventListener("click", button => {
+   addDot();
+})
+
+// End of Decimal
+
+//keyboard support
+
+document.addEventListener('keydown', function (event) {
+    let patternForNumbers = /[0-9]/g;
+    let patternForOperators = /[+\-*\/]/g;
+    if (event.key.match(patternForNumbers)) {
+      userInputNumber(event.key);
+      updateDisplay();
+    }
+    if (event.key === '.') {
+      addDot();
+      updateDisplay();
+    }
+    if (event.key.match(patternForOperators)) {
+      userInputOperator(event.key);
+      updateDisplay();
+    }
+    if (event.key === 'Enter' || event.key === '=') {
+      Equal();
+      updateDisplay();
+    }
+    if (event.key === "Backspace") {
+      del();
+      updateDisplay();
+    }
+    if (event.key == 'd') {
+      ac();
+      updateDisplay();
+    }
+  
+  });
+
+  //end of keyboard support
